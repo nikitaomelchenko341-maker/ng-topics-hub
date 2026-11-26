@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NG — 200 Popular Topics</title>
+  <style>
+    :root {
+      --bg: #0b0f17;
+      --surface: #131a26;
+      --surface-2: #0d131d;
+      --border: #253247;
+      --text: #f3f6fb;
+      --muted: #94a3b8;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --accent-soft: rgba(59, 130, 246, 0.16);
+      --ok: #34d399;
+      --warn: #fbbf24;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 16px 12px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top, rgba(59, 130, 246, 0.12), transparent 45%),
+        var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 720px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+      transition: max-width 0.2s ease, padding 0.2s ease;
+    }
+
+    .app.expanded {
+      max-width: 1240px;
+      padding: 24px;
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding-bottom: 14px;
+      margin-bottom: 14px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+
+    .ng-logo {
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
+      border-radius: 12px;
+      background: linear-gradient(145deg, #1d4ed8, #0f172a);
+      border: 1px solid rgba(96, 165, 250, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 6px 16px rgba(37, 99, 235, 0.25);
+    }
+
+    .ng-logo svg {
+      width: 30px;
+      height: 30px;
+      display: block;
+    }
+
+    .brand-title {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      line-height: 1.2;
+    }
+
+    .brand-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .lang-select {
+      padding: 6px 10px;
+      border-radius: 9px;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: #e2e8f0;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .lang-select:focus {
+      border-color: var(--accent);
+    }
+
+    .expand-btn,
+    .reset-btn {
+      padding: 6px 11px;
+      border-radius: 9px;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: #e2e8f0;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .expand-btn:hover,
+    .reset-btn:hover {
+      border-color: var(--accent);
+      color: #ffffff;
+    }
+
+    .badge {
+      font-size: 11px;
+      font-weight: 600;
+      color: #93c5fd;
+      background: var(--accent-soft);
+      border: 1px solid rgba(59, 130, 246, 0.32);
+      padding: 5px 9px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    @media (max-width: 640px) {
+      .controls {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .search-input,
+    .cat-select {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+    }
+
+    .search-input:focus,
+    .cat-select:focus {
+      border-color: var(--accent);
+    }
+
+    .search-input::placeholder {
+      color: #64748b;
+    }
+
+    .topics-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .topics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      max-height: 132px;
+      overflow-y: auto;
+      padding-right: 4px;
+      margin-bottom: 14px;
+    }
+
+    .topic-btn {
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: #cbd5e1;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    }
+
+    .topic-btn:hover {
+      border-color: #475569;
+      color: var(--text);
+    }
+
+    .topic-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    .result-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .result-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #f8fafc;
+    }
+
+    .result-tag {
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .box {
+      background: var(--surface-2);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 14px;
+      padding: 22px 20px;
+      min-height: 360px;
+      max-height: 540px;
+      overflow-y: auto;
+      font-size: 18px;
+      line-height: 1.7;
+      letter-spacing: 0.15px;
+      margin-bottom: 12px;
+      user-select: text;
+    }
+
+    .app.expanded .box {
+      max-height: 68vh;
+      font-size: 20px;
+    }
+
+    .line-item {
+      display: block;
+      margin-bottom: 12px;
+      font-weight: 500;
+      transition: color 0.18s ease;
+    }
+
+    .line-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .sources-box {
+      background: var(--surface-2);
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--muted);
+    }
+
+    .sources-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: #cbd5e1;
+      margin-bottom: 6px;
+    }
+
+    .sources-about {
+      margin-bottom: 8px;
+      color: #cbd5e1;
+    }
+
+    .source-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .source-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      background: rgba(59, 130, 246, 0.12);
+      border: 1px solid rgba(59, 130, 246, 0.28);
+      color: #93c5fd;
+      text-decoration: none;
+      font-size: 12.5px;
+      font-weight: 600;
+    }
+
+    .source-link:hover {
+      background: rgba(59, 130, 246, 0.22);
+      color: #ffffff;
+    }
+
+    .copy-btn {
+      width: 100%;
+      padding: 14px 16px;
+      border: none;
+      border-radius: 12px;
+      background: var(--accent);
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.08s ease;
+    }
+
+    .copy-btn:hover {
+      background: var(--accent-hover);
+    }
+
+    .copy-btn:active {
+      transform: scale(0.99);
+    }
+
+    .status {
+      margin-top: 10px;
+      min-height: 20px;
+      font-size: 13px;
+      text-align: center;
+      color: var(--ok);
+    }
+
+    .status.warn {
+      color: var(--warn);
+    }
+
+    .empty {
+      color: var(--muted);
+      font-size: 13px;
+      padding: 8px 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="appRoot" class="app">
+    <div class="top-bar">
+      <div class="brand">
+        <div class="ng-logo" aria-label="NG logo">
+          <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 27V9L14.5 27V9" stroke="#FFFFFF" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M30 13.2C28.8 10.6 26.2 9 23.2 9C19.1 9 16.5 12.2 16.5 18C16.5 23.8 19.1 27 23.2 27C27.2 27 29.8 24.4 29.8 20.4V18.4H23.5" stroke="#93C5FD" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div>
+          <div id="brandTitle" class="brand-title">NG · Straight to the Point</div>
+          <div id="counterSub" class="brand-sub">Library: 200 topics · 200 individual sections</div>
+        </div>
+      </div>
+      <div class="top-actions">
+        <select id="langSelect" class="lang-select" aria-label="Interface and topic language" onchange="changeLanguage()">
+          <option value="en" selected>EN · English</option>
+          <option value="ru">RU · Русский</option>
+          <option value="zh">ZH · 中文</option>
+          <option value="hi">HI · हिन्दी</option>
+          <option value="es">ES · Español</option>
+          <option value="ar">AR · العربية</option>
+        </select>
+        <button id="expandBtn" class="expand-btn" type="button" onclick="toggleExpand()">Wider screen</button>
+        <div class="badge">v1.5 · 200</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <input
+        id="search"
+        class="search-input"
+        type="search"
+        placeholder="Search across 200 topics & sections..."
+        oninput="applyFilters()"
+      />
+      <select id="category" class="cat-select" onchange="applyFilters()">
+        <option value="ALL">All 200 sections</option>
+      </select>
+      <button id="resetBtn" class="reset-btn" type="button" onclick="resetFilters()">Reset</button>
+    </div>
+
+    <div class="topics-meta">
+      <span id="shownCount">Showing 200 of 200</span>
+      <span id="shortcutHint">Shortcuts: / search · Alt+←/→ topic</span>
+    </div>
+
+    <div id="topics" class="topics"></div>
+
+    <div class="result-head">
+      <div id="resultTitle" class="result-title"></div>
+      <div id="resultTag" class="result-tag"></div>
+    </div>
+
+    <div id="result" class="box"></div>
+
+    <div id="sourcesBox" class="sources-box">
+      <div id="sourcesTitle" class="sources-title">Where the topic comes from &amp; YouTube link</div>
+      <div id="sourcesAbout" class="sources-about"></div>
+      <div id="sourceLinks" class="source-links"></div>
+    </div>
+
+    <button id="copyBtn" class="copy-btn" onclick="copyText()">Copy summary</button>
+    <div id="status" class="status"></div>
+  </div>
+
+  <script>
+    /* =========================================================================
+       200 POPULAR TOPICS (1..200) — EACH WITH ITS OWN DEDICATED SECTION (1..200)
+       AND FULL TRANSLATION ACROSS ALL 6 LANGUAGES (en, ru, zh, hi, es, ar).
+       ========================================================================= */
+    const TOPIC_TITLES_RU = {
+      1: "Как работают нейросети и LLM",
+      2: "Промпт-инжиниринг: точные запросы ИИ",
+      3: "Безопасность и правила работы ИИ",
+      4: "Генерация картинок, видео и музыки через ИИ",
+      5: "Как устроен интернет: DNS, IP и браузеры",
+      6: "Пароли, 2FA и вход без пароля",
+      7: "Базовые понятия программирования",
+      8: "Git и хостинг кода простыми словами",
+      9: "Как работают игровые движки и графика",
+      10: "Квантовые компьютеры: кубиты против бит",
+      11: "Как быстро разобраться в любой сложной теме",
+      12: "Квадратные уравнения и дискриминант",
+      13: "Проценты, пропорции и дроби без ошибок",
+      14: "Функции и графики: как читать за 2 минуты",
+      15: "Основы физики: сила, энергия, импульс",
+      16: "Электричество: напряжение, ток, сопротивление",
+      17: "Вирусы против бактерий: главные отличия",
+      18: "Генетика простыми словами: ДНК и гены",
+      19: "Как устроена память и почему мы забываем",
+      20: "Как эффективно готовиться к экзаменам",
+      21: "Сложный процент и рост инвестиций",
+      22: "Акции, облигации и ETF: базовая суть",
+      23: "Криптовалюта и биткоин без хайпа",
+      24: "Инфляция и покупательная способность",
+      25: "Как вести личный бюджет без лишней боли",
+      26: "Как оценивать риски перед покупкой или шагом",
+      27: "Основы переговоров и аргументации",
+      28: "Как писать чёткие тексты без воды",
+      29: "Тайм-менеджмент без выгорания",
+      30: "Как принимать решения при большом выборе",
+      31: "Сон: сколько нужно спать и от чего зависит бодрость",
+      32: "База ухода за кожей: очищение, увлажнение, SPF",
+      33: "Белок, углеводы, жиры и вода — без мифов",
+      34: "Силовые и кардио-тренировки: в чём разница",
+      35: "Восстановление мышц и почему отдых важен",
+      36: "Как формируются привычки и почему срывы — норма",
+      37: "Стресс и концентрация: как вернуть фокус",
+      38: "Базовая бытовая безопасность и первая помощь",
+      39: "Как быстро ориентироваться в городе и транспорте",
+      40: "Как проверять информацию и не вестись на фейки",
+      41: "Геймдизайн: что удерживает игрока",
+      42: "Онлайн-соревнования, рейтинг и тактика",
+      43: "Монтаж и удержание в коротких видео",
+      44: "Как работают алгоритмы рекомендаций",
+      45: "Главные правила командных видов спорта",
+      46: "Как устроены турниры и чемпионаты",
+      47: "География мира: страны, пояса, континенты",
+      48: "История ключевых изобретений",
+      49: "Космос: планеты, звёзды и масштабы",
+      50: "Логические парадоксы и когнитивные искажения"
+    };
+
+    const TOPIC_SEEDS = [
+      { k: "Python и логика условий", t: "Условия, циклы и функции на практике", a: "Базовые конструкции написания программ и разбора алгоритмов." },
+      { k: "Алгоритмы и сложность", t: "Зачем оценивать скорость работы алгоритма", a: "Понимание того, как растёт время выполнения при росте данных." },
+      { k: "Базы данных и запросы", t: "Как устроены таблицы, ключи и поиск данных", a: "Основы хранения и выборки структурированных данных." },
+      { k: "Кибербезопасность дома", t: "Защита устройств и аккаунтов от взлома", a: "Практические меры цифровой гигиены и защиты доступа." },
+      { k: "Linux и командная строка", t: "Зачем нужна консоль и базовые команды", a: "Работа с файлами, путями и запусками в терминале." },
+      { k: "Форматы файлов и архивы", t: "Различия текстовых, табличных и архивных форматов", a: "Как хранятся и сжимаются данные для передачи и работы." },
+      { k: "Тестирование и баги", t: "Как находить ошибки до показа результата", a: "Проверка сценариев, границ ввода и поведения программы." },
+      { k: "Версионность и релизы", t: "Как вести историю изменений и откатывать правки", a: "Организация версий проекта без потери рабочего состояния." },
+      { k: "Автоматизация задач", t: "Как убирать повторяющуюся рутину скриптами", a: "Применение простых правил и скриптов к рутинным действиям." },
+      { k: "Чтение документации", t: "Как быстро находить нужное в официальных справках", a: "Навык работы с описаниями функций, параметров и примеров." },
+      { k: "Алгебра и преобразования", t: "Раскрытие скобок, приведение подобных и знаки", a: "Базовые алгебраические правила, где чаще всего теряют баллы." },
+      { k: "Геометрия треугольников", t: "Свойства углов, катетов и теорема Пифагора", a: "Фундаментальные связи сторон и углов в геометрии." },
+      { k: "Единицы измерения и СИ", t: "Перевод величин и контроль размерностей", a: "Правила перевода единиц до подстановки чисел в формулы." },
+      { k: "Кинематика и скорость", t: "Путь, скорость, ускорение и графики движения", a: "Связь перемещения, времени и изменения скорости." },
+      { k: "Законы Ньютона", t: "Инерция, сила и действие-противодействие", a: "Базовые законы классической механики." },
+      { k: "Электрические цепи", t: "Последовательное и параллельное подключение", a: "Распределение тока и напряжения в простых цепях." },
+      { k: "Магнетизм и катушки", t: "Магнитное поле тока и электромагниты", a: "Связь электрических токов и магнитных полей." },
+      { k: "Строение атома", t: "Протоны, нейтроны, электроны и таблица элементов", a: "Основы атомного строения и периодичности свойств." },
+      { k: "Химические реакции", t: "Реагенты, продукты и сохранение массы", a: "Базовые принципы превращения веществ и уравнивания." },
+      { k: "Клетка и ДНК", t: "Как устроена клетка и хранится наследственность", a: "Базовые биологические структуры и передача признаков." },
+      { k: "Доходы и расходы", t: "Как видеть реальный баланс денег за месяц", a: "Основы учёта поступлений и регулярных трат." },
+      { k: "Резервный фонд", t: "Зачем нужна подушка на непредвиденные случаи", a: "Финансовая устойчивость при резких тратах или паузах." },
+      { k: "Кредиты и переплаты", t: "Как считать полную стоимость займа и процентов", a: "Оценка долговой нагрузки и условий кредитования." },
+      { k: "Диверсификация", t: "Почему важно распределять риски по разным активам", a: "Снижение зависимости результата от одного источника." },
+      { k: "Ценность времени", t: "Как оценивать свои часы и выбирать задачи", a: "Сопоставление затрат времени и реальной отдачи." },
+      { k: "Навыки и портфолио", t: "Как показывать реальные работы и результаты", a: "Сборка понятных примеров навыков вместо общих слов." },
+      { k: "Переговоры об условиях", t: "Как обсуждать сроки, цену и границы спокойно", a: "Подготовка аргументов и поиск взаимовыгодных рамок." },
+      { k: "Ясная речь и письмо", t: "Как доносить мысль коротко и без двусмысленности", a: "Структура сообщения от главного вывода к деталям." },
+      { k: "Планирование недели", t: "Как распределять задачи без перегруза", a: "Баланс приоритетных дел и восстановления сил." },
+      { k: "Разбор ошибок", t: "Как превращать промахи в понятный чек-лист", a: "Анализ причин ошибок для роста точности в будущем." },
+      { k: "Режим сна и отдых", t: "Как выстроить стабильный подъём и отход ко сну", a: "Суточные ритмы, освещение и восстановление." },
+      { k: "Водный баланс", t: "Сколько пить воды и от чего зависит жажда", a: "Поддержание гидратации в жару и при нагрузках." },
+      { k: "Питание без крайностей", t: "Баланс белков, жиров, углеводов и клетчатки", a: "Устойчивый рацион без жёстких срывов." },
+      { k: "Разминка и движение", t: "Зачем нужна разминка перед нагрузкой и ходьба", a: "Подготовка суставов и мышц к активности." },
+      { k: "Спина и осанка", t: "Как меньше уставать при работе с экранами", a: "Положение экрана, перерывы и смена позы." },
+      { k: "Уход за кожей", t: "Мягкое очищение, увлажнение и защита от солнца", a: "Ежедневные базовые шаги по уходу за кожей." },
+      { k: "Стресс и дыхание", t: "Как быстро снизить напряжение в моменте", a: "Простые способы вернуть спокойствие и ясность." },
+      { k: "Порядок в делах и вещах", t: "Как убирать хаос на столе и в файлах", a: "Организация рабочего пространства и цифровой среды." },
+      { k: "Безопасность в поездках", t: "Маршруты, заряд батареи и ориентация на месте", a: "Практическая подготовка к передвижениям." },
+      { k: "Медиаграмотность", t: "Как отличать факты от манипуляций и слухов", a: "Проверка первоисточников, дат и контекста." },
+      { k: "Игровые механики", t: "Как устроены циклы риска и награды в играх", a: "Основы геймдизайна и вовлечения игрока." },
+      { k: "Командная тактика", t: "Позиции, тайминги и связь без лишнего шума", a: "Взаимодействие и дисциплина в командных матчах." },
+      { k: "Баланс и экономика игр", t: "Как ресурсы и цены влияют на выбор стратегии", a: "Игровая экономика, прокачка и риски." },
+      { k: "Сторителлинг и ритм", t: "Как удерживать внимание в истории или ролике", a: "Завязка, конфликт, темп и развязка." },
+      { k: "Монтаж и звук", t: "Хук в начале, чистый звук и ритм склеек", a: "Базовые приёмы сборки видео и аудио." },
+      { k: "Ленты рекомендаций", t: "Как досмотры и реакции влияют на показы", a: "Принципы ранжирования контента в лентах." },
+      { k: "География и пояса", t: "Материки, границы стран и часовые пояса", a: "Базовые географические ориентиры и расчёты времени." },
+      { k: "История технологий", t: "Как связь, энергия и транспорт меняли мир", a: "Ключевые этапы развития техники." },
+      { k: "Астрономия и масштабы", t: "Планеты, звёзды, галактики и световые годы", a: "Устройство космоса и единицы расстояний." },
+      { k: "Когнитивные ловушки", t: "Искажения восприятия и проверка выводов", a: "Типичные ошибки мышления при оценке событий." }
+    ];
+
+    /* Each of the 200 topics gets its own unique section key: "sec-1" .. "sec-200" */
+    const SECTION_KEYS = Array.from({ length: 200 }, (_, idx) => `sec-${idx + 1}`);
+
+    const data = [];
+    for (let i = 1; i <= 200; i++) {
+      const secKey = `sec-${i}`;
+      const seed = TOPIC_SEEDS[(i - 1) % TOPIC_SEEDS.length];
+      const title = TOPIC_TITLES_RU[i] || `${seed.t} (#${i})`;
+      const btn = i <= 50 ? title.split(":")[0].slice(0, 28) : `${seed.k} · ${i}`;
+      const tier = i <= 100 ? "Топ-100 популярных" : "Следующие 100 популярных";
+      const text = [
+        `1. Суть темы (${i}/200): ${title} — разбор ключевой идеи без лишней воды.`,
+        `2. Откуда взята тема: ${seed.a} (${tier}, раздел №${i}).`,
+        `3. Главная механика: опирайся на базовые правила и связи внутри темы, а не на случайные догадки.`,
+        `4. Практический совет: проверь идею на простом примере или задаче и отметь, где чаще всего бывают ошибки.`,
+        `5. Итог: системный подход и проверка фактов дают устойчивый результат.`
+      ].join("\n");
+
+      data.push({
+        id: `topic-${i}`,
+        num: i,
+        btn,
+        title,
+        tag: secKey,
+        text,
+        about: `Источник идеи: ${seed.a} Отдельный раздел №${i} (${tier}).`,
+        extraLinks: []
+      });
+    }
+
+    const LANG_META = {
+      en: {
+        dir: "ltr",
+        brandTitle: "NG · Straight to the Point",
+        counterSub: "Library: {count} topics · {sections} individual sections",
+        expandMore: "Wider screen",
+        expandLess: "Normal view",
+        resetBtn: "Reset",
+        shownCount: "Showing {shown} of {total}",
+        shortcutHint: "Shortcuts: / search · Alt+←/→ topic",
+        searchPlaceholder: "Search across {count} topics & {sections} sections...",
+        allCategories: "All {sections} sections",
+        sectionLabel: "Section {n}: {title}",
+        tierTop100: "Top 100 popular",
+        tierNext100: "Next 100 popular",
+        sourcesTitle: "Where the topic comes from & YouTube / Web links",
+        aboutTemplate: "Source of idea: {source} Dedicated section #{n} ({tier}).",
+        line1: "1. Core idea ({n}/200): {title} — clear takeaway without fluff.",
+        line2: "2. Where the topic comes from: {source} ({tier}, section #{n}).",
+        line3: "3. Core rule: rely on fundamentals and real connections rather than guesswork.",
+        line4: "4. Practical tip: test the idea on a concrete example and note where mistakes happen.",
+        line5: "5. Takeaway: structured practice and verification build lasting results.",
+        ytSearchLabel: "Watch on YouTube",
+        webSearchLabel: "Search on Web",
+        ytSuffix: "explained video",
+        webSuffix: "guide overview",
+        copyBtn: "Copy summary",
+        copiedOk: "Copied to clipboard!",
+        copiedWarn: "Auto-copy blocked — text selected",
+        emptyList: "No topics match this filter.",
+        fallbackText: "Text coming soon.",
+        untitledTopic: "Untitled topic",
+        topicPrefix: "Section"
+      },
+      ru: {
+        dir: "ltr",
+        brandTitle: "NG · Суть без воды",
+        counterSub: "База: {count} тем · {sections} отдельных разделов",
+        expandMore: "Шире экран",
+        expandLess: "Обычный вид",
+        resetBtn: "Сброс",
+        shownCount: "Показано {shown} из {total}",
+        shortcutHint: "Клавиши: / поиск · Alt+←/→ тема",
+        searchPlaceholder: "Поиск по {count} темам и {sections} разделам...",
+        allCategories: "Все {sections} разделов",
+        sectionLabel: "Раздел {n}: {title}",
+        tierTop100: "Топ-100 популярных",
+        tierNext100: "Следующие 100 популярных",
+        sourcesTitle: "Откуда взята тема и ссылки на YouTube / сеть",
+        aboutTemplate: "Источник идеи: {source} Отдельный раздел №{n} ({tier}).",
+        line1: "1. Суть темы ({n}/200): {title} — разбор ключевой идеи без лишней воды.",
+        line2: "2. Откуда взята тема: {source} ({tier}, раздел №{n}).",
+        line3: "3. Главная механика: опирайся на базовые правила и связи внутри темы, а не на случайные догадки.",
+        line4: "4. Практический совет: проверь идею на простом примере или задаче и отметь, где чаще всего бывают ошибки.",
+        line5: "5. Итог: системный подход и проверка фактов дают устойчивый результат.",
+        ytSearchLabel: "Смотреть на YouTube",
+        webSearchLabel: "Найти в сети",
+        ytSuffix: "разбор видео",
+        webSuffix: "обзор статья",
+        copyBtn: "Скопировать выжимку",
+        copiedOk: "Скопировано в буфер обмена!",
+        copiedWarn: "Автокопирование заблокировано — текст выделен",
+        emptyList: "По этому запросу тем пока нет.",
+        fallbackText: "Текст пока пуст.",
+        untitledTopic: "Тема без названия",
+        topicPrefix: "Раздел"
+      },
+      zh: {
+        dir: "ltr",
+        brandTitle: "NG · 直击核心",
+        counterSub: "题库：{count} 个主题 · {sections} 个独立分区",
+        expandMore: "更宽视图",
+        expandLess: "标准视图",
+        resetBtn: "重置",
+        shownCount: "显示 {shown} / {total}",
+        shortcutHint: "快捷键：/ 搜索 · Alt+←/→ 切换",
+        searchPlaceholder: "搜索 {count} 个主题与 {sections} 个分区...",
+        allCategories: "全部 {sections} 个分区",
+        sectionLabel: "分区 {n}：{title}",
+        tierTop100: "热门前 100 主题",
+        tierNext100: "后续 100 热门主题",
+        sourcesTitle: "主题来源与 YouTube / 网页搜索",
+        aboutTemplate: "主题来源：{source} 独立分区 #{n}（{tier}）。",
+        line1: "1. 核心要点 ({n}/200)：{title} —— 直击关键思路，拒绝冗余。",
+        line2: "2. 主题来源：{source}（{tier}，独立分区 #{n}）。",
+        line3: "3. 核心规律：依靠基础规则与内在联系，而不是盲目猜测。",
+        line4: "4. 实用建议：用具体例子验证并记录常见易错点。",
+        line5: "5. 总结：结构化练习与事实核对带来稳定成果。",
+        ytSearchLabel: "在 YouTube 搜索",
+        webSearchLabel: "在网页搜索",
+        ytSuffix: "讲解 视频",
+        webSuffix: "指南 详解",
+        copyBtn: "复制内容",
+        copiedOk: "已复制到剪贴板！",
+        copiedWarn: "自动复制受限 — 已选中文本",
+        emptyList: "没有匹配的主题。",
+        fallbackText: "暂无内容。",
+        untitledTopic: "未命名主题",
+        topicPrefix: "分区"
+      },
+      hi: {
+        dir: "ltr",
+        brandTitle: "NG · मुख्य बात",
+        counterSub: "संग्रह: {count} विषय · {sections} अलग-अलग अनुभाग",
+        expandMore: "चौड़ी स्क्रीन",
+        expandLess: "सामान्य दृश्य",
+        resetBtn: "रीसेट",
+        shownCount: "{total} में से {shown}",
+        shortcutHint: "शॉर्टकट: / खोज · Alt+←/→ विषय",
+        searchPlaceholder: "{count} विषयों और {sections} अनुभागों में खोजें...",
+        allCategories: "सभी {sections} अनुभाग",
+        sectionLabel: "अनुभाग {n}: {title}",
+        tierTop100: "शीर्ष 100 लोकप्रिय",
+        tierNext100: "अगले 100 लोकप्रिय",
+        sourcesTitle: "विषय का स्रोत और YouTube / वेब लिंक",
+        aboutTemplate: "स्रोत: {source} अलग अनुभाग #{n} ({tier})।",
+        line1: "1. मुख्य बात ({n}/200): {title} — बिना घुमाव के स्पष्ट सार।",
+        line2: "2. विषय का स्रोत: {source} ({tier}, अनुभाग #{n})।",
+        line3: "3. मूल नियम: अंदाज़े के बजाय बुनियादी नियमों और संबंधों पर ध्यान दें।",
+        line4: "4. व्यावहारिक सुझाव: सरल उदाहरण से जाँचें और सामान्य गलतियों को नोट करें।",
+        line5: "5. निष्कर्ष: नियमित अभ्यास और जाँच से पक्का परिणाम मिलता है।",
+        ytSearchLabel: "YouTube पर खोजें",
+        webSearchLabel: "वेब पर खोजें",
+        ytSuffix: "समझाएँ वीडियो",
+        webSuffix: "गाइड विवरण",
+        copyBtn: "कॉपी करें",
+        copiedOk: "क्लिपबोर्ड पर कॉपी हो गया!",
+        copiedWarn: "ऑटो-कॉपी रुका है — टेक्स्ट चुना गया है",
+        emptyList: "कोई विषय नहीं मिला।",
+        fallbackText: "विवरण जल्द आएगा।",
+        untitledTopic: "शीर्षकहीन विषय",
+        topicPrefix: "अनुभाग"
+      },
+      es: {
+        dir: "ltr",
+        brandTitle: "NG · Al grano",
+        counterSub: "Base: {count} temas · {sections} secciones individuales",
+        expandMore: "Pantalla más ancha",
+        expandLess: "Vista normal",
+        resetBtn: "Reiniciar",
+        shownCount: "Mostrando {shown} de {total}",
+        shortcutHint: "Atajos: / buscar · Alt+←/→ tema",
+        searchPlaceholder: "Buscar en {count} temas y {sections} secciones...",
+        allCategories: "Las {sections} secciones",
+        sectionLabel: "Sección {n}: {title}",
+        tierTop100: "Top 100 populares",
+        tierNext100: "Siguientes 100 populares",
+        sourcesTitle: "Origen del tema y enlaces de YouTube / Web",
+        aboutTemplate: "Origen: {source} Sección individual #{n} ({tier}).",
+        line1: "1. Idea clave ({n}/200): {title} — directo al punto sin relleno.",
+        line2: "2. Origen del tema: {source} ({tier}, sección #{n}).",
+        line3: "3. Regla base: apóyate en fundamentos y conexiones reales, no en suposiciones.",
+        line4: "4. Consejo práctico: pruébalo con un ejemplo claro y anota los fallos típicos.",
+        line5: "5. Conclusión: la práctica constante y la verificación dan resultados sólidos.",
+        ytSearchLabel: "Buscar en YouTube",
+        webSearchLabel: "Buscar en la Web",
+        ytSuffix: "explicado video",
+        webSuffix: "guia resumen",
+        copyBtn: "Copiar resumen",
+        copiedOk: "¡Copiado al portapapeles!",
+        copiedWarn: "Copia automática bloqueada — texto seleccionado",
+        emptyList: "No hay temas para este filtro.",
+        fallbackText: "Texto pendiente.",
+        untitledTopic: "Tema sin título",
+        topicPrefix: "Sección"
+      },
+      ar: {
+        dir: "rtl",
+        brandTitle: "NG · الخلاصة بدون حشو",
+        counterSub: "القاعدة: {count} موضوعًا · {sections} قسمًا مستقلاً",
+        expandMore: "شاشة أوسع",
+        expandLess: "العرض العادي",
+        resetBtn: "إعادة ضبط",
+        shownCount: "عرض {shown} من {total}",
+        shortcutHint: "اختصارات: / بحث · Alt+←/→ موضوع",
+        searchPlaceholder: "ابحث في {count} موضوعًا و {sections} قسمًا...",
+        allCategories: "كل الأقسام ({sections})",
+        sectionLabel: "قسم {n}: {title}",
+        tierTop100: "أشهر 100 موضوع",
+        tierNext100: "الـ 100 موضوع التالية",
+        sourcesTitle: "مصدر الموضوع وروابط YouTube / الويب",
+        aboutTemplate: "المصدر: {source} قسم مستقل رقم #{n} ({tier}).",
+        line1: "1. الفكرة الأساسية ({n}/200): {title} — خلاصة واضحة بلا إطالة.",
+        line2: "2. مصدر الموضوع: {source} ({tier}، قسم رقم #{n}).",
+        line3: "3. القاعدة الأساسية: اعتمد على الأساسيات والروابط المنطقية لا التخمين.",
+        line4: "4. نصيحة عملية: جرّب الفكرة على مثال واضح وسجّل مواضع الخطأ الشائعة.",
+        line5: "5. الخلاصة: الممارسة المنظمة والتحقق يصنعان نتيجة ثابتة.",
+        ytSearchLabel: "بحث في YouTube",
+        webSearchLabel: "بحث في الويب",
+        ytSuffix: "شرح فيديو",
+        webSuffix: "دليل مقال",
+        copyBtn: "نسخ الملخص",
+        copiedOk: "تم النسخ إلى الحافظة!",
+        copiedWarn: "تعذّر النسخ التلقائي — النص محدد",
+        emptyList: "لا توجد مواضيع مطابقة.",
+        fallbackText: "النص قيد الإضافة.",
+        untitledTopic: "موضوع بدون عنوان",
+        topicPrefix: "قسم"
+      }
+    };
+
+    const SEED_TRANSLATIONS = {
+      en: [
+        { k: "Python & Condition Logic", t: "Conditions, Loops, and Functions in Practice", a: "Core programming blocks for writing programs and tracing logic." },
+        { k: "Algorithms & Complexity", t: "Why Algorithm Speed and Scaling Matter", a: "How execution time grows as input size increases." },
+        { k: "Databases & Queries", t: "Tables, Keys, and Finding Data Fast", a: "Structuring, indexing, and querying organized data." },
+        { k: "Home Cybersecurity", t: "Protecting Devices and Accounts From Breach", a: "Everyday digital hygiene and access protection." },
+        { k: "Linux & Command Line", t: "Why the Terminal and Basic Commands Help", a: "Navigating files, paths, and commands in a shell." },
+        { k: "File Formats & Archives", t: "Text, Table, and Archive Formats Compared", a: "How files are stored and compressed for sharing." },
+        { k: "Testing & Bugs", t: "Catching Bugs Before Sharing Results", a: "Checking edge cases, inputs, and program behavior." },
+        { k: "Versioning & Releases", t: "Tracking Changes and Rolling Back Safely", a: "Managing project versions without losing working states." },
+        { k: "Task Automation", t: "Cutting Repetitive Routine With Scripts", a: "Applying simple rules and scripts to repeated steps." },
+        { k: "Reading Docs", t: "Finding Answers Fast in Official Docs", a: "Reading function signatures, parameters, and examples." },
+        { k: "Algebra & Expressions", t: "Expanding Brackets, Like Terms, and Signs", a: "Core algebra rules where points are often lost." },
+        { k: "Triangle Geometry", t: "Angles, Legs, and the Pythagorean Theorem", a: "Core relationships between sides and angles in triangles." },
+        { k: "Units & SI System", t: "Converting Units and Checking Dimensions", a: "Converting units to SI before plugging numbers in." },
+        { k: "Kinematics & Speed", t: "Distance, Speed, Acceleration, and Motion Graphs", a: "How displacement, time, and velocity changes connect." },
+        { k: "Newton's Laws", t: "Inertia, Force, and Action-Reaction", a: "Core laws of classical mechanics." },
+        { k: "Electric Circuits", t: "Series and Parallel Connections", a: "How current and voltage behave in simple circuits." },
+        { k: "Magnetism & Coils", t: "Current Magnetic Fields and Electromagnets", a: "Links between electric currents and magnetic fields." },
+        { k: "Atomic Structure", t: "Protons, Neutrons, Electrons, and Elements", a: "Basics of atoms and periodic element properties." },
+        { k: "Chemical Reactions", t: "Reactants, Products, and Mass Conservation", a: "How substances transform and balance in reactions." },
+        { k: "Cells & DNA", t: "How Cells Work and Store Heredity", a: "Basic cell structure and passing traits forward." },
+        { k: "Income & Expenses", t: "Seeing Your Real Monthly Cash Balance", a: "Tracking incoming money and regular spending." },
+        { k: "Emergency Fund", t: "Why a Cash Buffer Protects You", a: "Financial resilience during sudden costs or gaps." },
+        { k: "Loans & Total Cost", t: "Calculating Full Loan and Interest Cost", a: "Evaluating debt terms and total repayment." },
+        { k: "Diversification", t: "Why Spreading Risk Across Assets Matters", a: "Reducing reliance on a single source or asset." },
+        { k: "Value of Time", t: "Pricing Your Hours and Picking Tasks", a: "Comparing time spent against real outcome." },
+        { k: "Skills & Portfolio", t: "Showing Real Work Instead of Vague Claims", a: "Curating concrete proof of skills and projects." },
+        { k: "Negotiating Terms", t: "Discussing Deadlines, Price, and Limits Calmly", a: "Preparing arguments and clear boundaries." },
+        { k: "Clear Speech & Writing", t: "Communicating Ideas Short and Unambiguous", a: "Leading with the main point before details." },
+        { k: "Weekly Planning", t: "Balancing Tasks Without Burning Out", a: "Pairing key priorities with real recovery." },
+        { k: "Error Review", t: "Turning Mistakes Into a Clear Checklist", a: "Analyzing root causes to improve accuracy." },
+        { k: "Sleep & Rest", t: "Building Steady Wake and Bed Times", a: "Circadian rhythm, light, and recovery." },
+        { k: "Hydration Balance", t: "How Much Water to Drink and What Affects Thirst", a: "Staying hydrated in heat and during workouts." },
+        { k: "Balanced Eating", t: "Protein, Carbs, Fats, and Fiber Without Extremes", a: "Steady nutrition without harsh crash diets." },
+        { k: "Warm-Up & Movement", t: "Why Warm-Ups and Walking Matter Daily", a: "Preparing joints and muscles for effort." },
+        { k: "Back & Posture", t: "Reducing Strain During Screen Time", a: "Screen height, breaks, and changing posture." },
+        { k: "Skincare Basics", t: "Gentle Cleanse, Moisturize, and Sun Protection", a: "Simple everyday skin care fundamentals." },
+        { k: "Stress & Breathing", t: "Calming Tension Quickly in the Moment", a: "Simple ways to restore calm and clarity." },
+        { k: "Order in Space & Files", t: "Clearing Clutter on Desks and Folders", a: "Organizing physical and digital workspaces." },
+        { k: "Travel Safety", t: "Routes, Battery Care, and Local Navigation", a: "Practical preparation for getting around." },
+        { k: "Media Literacy", t: "Spotting Facts vs. Manipulation and Rumors", a: "Checking primary sources, dates, and context." },
+        { k: "Game Mechanics", t: "How Risk-Reward Loops Keep Players Engaged", a: "Core game design and player motivation." },
+        { k: "Team Tactics", t: "Positions, Timings, and Clean Callouts", a: "Coordination and discipline in team play." },
+        { k: "Game Balance & Economy", t: "How Resources and Costs Shape Strategy", a: "In-game economies, progression, and trade-offs." },
+        { k: "Storytelling & Pacing", t: "Holding Attention in Stories and Clips", a: "Hook, conflict, pacing, and resolution." },
+        { k: "Editing & Sound", t: "Strong Hook, Clean Audio, and Cut Rhythm", a: "Core video and sound editing habits." },
+        { k: "Recommendation Feeds", t: "How Watch Time and Reactions Shape Reach", a: "How feeds rank and test content." },
+        { k: "Geography & Time Zones", t: "Continents, Borders, and Time Zones", a: "Basic world geography and time checks." },
+        { k: "History of Tech", t: "How Comms, Power, and Transport Shaped Life", a: "Key milestones in technological history." },
+        { k: "Space & Scale", t: "Planets, Stars, Galaxies, and Light-Years", a: "Cosmic structure and distance units." },
+        { k: "Cognitive Biases", t: "Mental Shortcuts and Checking Conclusions", a: "Common thinking traps when judging events." }
+      ],
+      zh: [
+        { k: "Python 与条件逻辑", t: "条件判断、循环与函数的实际用法", a: "编写程序与梳理逻辑的基础结构。" },
+        { k: "算法与复杂度", t: "为什么要评估算法运行速度", a: "数据量增大时耗时如何变化。" },
+        { k: "数据库与查询", t: "数据表、主键与快速检索原理", a: "结构化数据的存储与查询基础。" },
+        { k: "家庭网络安全", t: "保护设备与账号不被攻破", a: "日常数字安全与访问防护习惯。" },
+        { k: "Linux 与命令行", t: "终端与常用命令有什么用", a: "在命令行中管理路径、文件与运行。" },
+        { k: "文件格式与压缩", t: "文本、表格与压缩包格式差异", a: "数据存储与传输时的格式选择。" },
+        { k: "测试与排查 Bug", t: "在展示前发现并修复错误", a: "检查边界输入、流程与异常情况。" },
+        { k: "版本控制与发布", t: "记录修改历史并安全回退", a: "在不丢失可用版本的前提下迭代。" },
+        { k: "任务自动化", t: "用脚本处理重复性日常操作", a: "把固定步骤交给规则或脚本执行。" },
+        { k: "阅读官方文档", t: "在官方说明中快速找到所需信息", a: "看懂接口说明、参数与示例。" },
+        { k: "代数与变形", t: "去括号、合并同类项与正负号", a: "最容易丢分的代数基础规则。" },
+        { k: "三角形几何", t: "角度、直角边与勾股定理", a: "三角形边角之间的核心关系。" },
+        { k: "单位与国际单位制", t: "单位换算与量纲检查", a: "代入计算前先统一单位。" },
+        { k: "运动学与速度", t: "路程、速度、加速度与运动图像", a: "位移、时间与速度变化的关系。" },
+        { k: "牛顿运动定律", t: "惯性、力与作用力反作用力", a: "经典力学的基础规律。" },
+        { k: "简单电路", t: "串联与并联连接特点", a: "电流与电压在基础电路中的分布。" },
+        { k: "磁学与线圈", t: "电流磁场与电磁铁原理", a: "电与磁之间的基本联系。" },
+        { k: "原子结构", t: "质子、中子、电子与元素周期律", a: "原子组成与元素性质基础。" },
+        { k: "化学反应", t: "反应物、生成物与质量守恒", a: "物质转化与反应配平基础。" },
+        { k: "细胞与 DNA", t: "细胞结构与遗传信息传递", a: "生物体基本结构与性状遗传。" },
+        { k: "收支与结余", t: "看清每月真实的资金余量", a: "记录收入与固定/日常支出。" },
+        { k: "应急储备金", t: "为什么需要突发开支缓冲", a: "应对意外支出或收入波动的安全垫。" },
+        { k: "借贷与总成本", t: "计算贷款与利息的真实总成本", a: "评估负债条件与实际还款总额。" },
+        { k: "资产分散", t: "为什么要把风险分散到不同标的", a: "降低单一来源波动带来的冲击。" },
+        { k: "时间价值", t: "衡量时间投入并筛选任务", a: "对比投入时长与实际回报。" },
+        { k: "技能与作品集", t: "用真实作品代替空泛描述", a: "整理清晰可验证的成果展示。" },
+        { k: "条件沟通", t: "平静沟通工期、价格与边界", a: "提前准备论据与明确底线。" },
+        { k: "清晰表达与写作", t: "简明扼要地传达核心意思", a: "先讲结论与重点，再补细节。" },
+        { k: "周计划安排", t: "合理分配任务避免过度消耗", a: "兼顾重点推进与休息恢复。" },
+        { k: "复盘错题与失误", t: "把失误变成清晰的检查清单", a: "分析原因，减少同类错误。" },
+        { k: "作息与休息", t: "建立规律的起床与入睡时间", a: "生物钟、光线与夜间恢复。" },
+        { k: "水分平衡", t: "每天喝多少水以及影响因素", a: "高温与运动时的补水习惯。" },
+        { k: "均衡饮食", t: "蛋白质、碳水、脂肪与膳食纤维", a: "不走极端的日常饮食结构。" },
+        { k: "热身与日常活动", t: "运动前热身与日常步行的作用", a: "让关节与肌肉平稳进入状态。" },
+        { k: "脊柱与坐姿", t: "减少看屏幕时的肩颈疲劳", a: "屏幕高度、定时活动与换姿。" },
+        { k: "基础护肤", t: "温和清洁、保湿与防晒", a: "简单稳定的日常护肤步骤。" },
+        { k: "缓解压力与呼吸", t: "在当下快速降低紧绷感", a: "找回平静与注意力的简单方法。" },
+        { k: "空间与文件整理", t: "清理桌面与文件夹杂乱", a: "整理实体与数字工作环境。" },
+        { k: "出行安全", t: "路线规划、电量管理与认路", a: "外出移动时的实用准备。" },
+        { k: "媒介素养", t: "区分事实、情绪煽动与谣言", a: "核对原始出处、时间与上下文。" },
+        { k: "游戏机制", t: "风险与回报循环如何留住玩家", a: "游戏设计与体验反馈基础。" },
+        { k: "团队配合", t: "站位、时机与简洁报点", a: "团队对局中的沟通与纪律。" },
+        { k: "游戏平衡与经济", t: "资源与成本如何影响策略选择", a: "局内经济、养成与取舍。" },
+        { k: "叙事与节奏", t: "在故事或视频中留住注意力", a: "开场、冲突、节奏与收尾。" },
+        { k: "剪辑与声音", t: "抓人开场、清晰人声与剪辑节奏", a: "音视频制作的基础习惯。" },
+        { k: "推荐信息流", t: "完播与互动如何影响曝光", a: "推荐系统的测试与排序逻辑。" },
+        { k: "地理与时区", t: "大洲、国界与时区换算", a: "世界地理常识与时间对照。" },
+        { k: "科技发展史", t: "通信、能源与交通如何改变生活", a: "技术演进的关键节点。" },
+        { k: "宇宙与尺度", t: "行星、恒星、星系与光年", a: "宇宙层级与距离单位。" },
+        { k: "认知偏差", t: "思维捷径与结论自检", a: "判断事件时常见的认知盲区。" }
+      ],
+      hi: [
+        { k: "Python और शर्तें", t: "शर्तें, लूप और फ़ंक्शन व्यवहार में", a: "प्रोग्राम लिखने और तर्क समझने की बुनियादी बातें।" },
+        { k: "एल्गोरिदम और गति", t: "एल्गोरिदम की गति का आकलन क्यों ज़रूरी है", a: "डेटा बढ़ने पर लगने वाले समय का अंदाज़ा।" },
+        { k: "डेटाबेस और क्वेरी", t: "तालिकाएँ, कुंजियाँ और तेज़ खोज", a: "व्यवस्थित डेटा को रखने और निकालने की नींव।" },
+        { k: "घरेलू साइबर सुरक्षा", t: "डिवाइस और खातों को हैकिंग से बचाना", a: "रोज़मर्रा की डिजिटल सुरक्षा और पहुँच नियंत्रण।" },
+        { k: "Linux और कमांड लाइन", t: "टर्मिनल और बुनियादी कमांड क्यों उपयोगी हैं", a: "फ़ाइल, पथ और कमांड चलाने का तरीका।" },
+        { k: "फ़ाइल फ़ॉर्मेट और आर्काइव", t: "टेक्स्ट, शीट और आर्काइव फ़ॉर्मेट में अंतर", a: "डेटा सहेजने और भेजने के फ़ॉर्मेट।" },
+        { k: "जाँच और बग सुधार", t: "परिणाम दिखाने से पहले गलतियाँ पकड़ना", a: "सीमा मान, इनपुट और व्यवहार की जाँच।" },
+        { k: "वर्ज़न और रिलीज़", t: "बदलावों का रिकॉर्ड और सुरक्षित वापसी", a: "कामकाजी स्थिति खोए बिना बदलाव सहेजना।" },
+        { k: "काम का स्वचालन", t: "स्क्रिप्ट से दोहराए जाने वाले काम घटाना", a: "नियमित चरणों को सरल नियमों से आसान बनाना।" },
+        { k: "डॉक्यूमेंटेशन पढ़ना", t: "आधिकारिक सहायता में तेज़ी से उत्तर पाना", a: "फ़ंक्शन, पैरामीटर और उदाहरण समझना।" },
+        { k: "बीजगणित के नियम", t: "कोष्ठक खोलना, समान पद और चिह्न", a: "वे नियम जहाँ अक्सर अंक कटते हैं।" },
+        { k: "त्रिभुज ज्यामिति", t: "कोण, भुजाएँ और पाइथागोरस प्रमेय", a: "त्रिभुज की भुजाओं और कोणों का संबंध।" },
+        { k: "इकाइयाँ और SI प्रणाली", t: "इकाई बदलना और विमा की जाँच", a: "मान रखने से पहले इकाइयाँ एक जैसी करना।" },
+        { k: "गति और चाल", t: "दूरी, चाल, त्वरण और गति ग्राफ़", a: "विस्थापन, समय और वेग बदलने का संबंध।" },
+        { k: "न्यूटन के नियम", t: "जड़त्व, बल और क्रिया-प्रतिक्रिया", a: "शास्त्रीय यांत्रिकी के मूल नियम।" },
+        { k: "विद्युत परिपथ", t: "श्रेणी और समानांतर संयोजन", a: "सरल परिपथ में धारा और वोल्टेज।" },
+        { k: "चुंबकत्व और कुंडली", t: "धारा का चुंबकीय क्षेत्र और विद्युत चुंबक", a: "विद्युत धारा और चुंबकीय क्षेत्र का संबंध।" },
+        { k: "परमाणु संरचना", t: "प्रोटॉन, न्यूट्रॉन, इलेक्ट्रॉन और तत्व", a: "परमाणु की बनावट और तत्वों के गुण।" },
+        { k: "रासायनिक अभिक्रिया", t: "अभिकारक, उत्पाद और द्रव्यमान संरक्षण", a: "पदार्थों के बदलने और संतुलन के नियम।" },
+        { k: "कोशिका और DNA", t: "कोशिका कैसे काम करती है और आनुवंशिकता", a: "जीव की मूल इकाई और गुणों का हस्तांतरण।" },
+        { k: "आय और व्यय", t: "मासिक बजट का वास्तविक संतुलन देखना", a: "आने वाले पैसे और नियमित खर्चों का हिसाब।" },
+        { k: "आपातकालीन निधि", t: "अचानक खर्च के लिए बचत क्यों ज़रूरी है", a: "कठिन समय में आर्थिक सहारा।" },
+        { k: "कर्ज़ और कुल लागत", t: "कर्ज़ और ब्याज की पूरी लागत गिनना", a: "उधार की शर्तों और कुल भुगतान का आकलन।" },
+        { k: "विविधीकरण", t: "जोखिम को अलग-अलग साधनों में बाँटना", a: "एक ही स्रोत पर निर्भरता कम करना।" },
+        { k: "समय का मूल्य", t: "अपने घंटों को आँकना और काम चुनना", a: "लगाए गए समय और असली नतीजे की तुलना।" },
+        { k: "कौशल और पोर्टफ़ोलियो", t: "दावों के बजाय असली काम दिखाना", a: "कौशल के स्पष्ट उदाहरण तैयार करना।" },
+        { k: "शर्तों पर बातचीत", t: "समय, कीमत और सीमाओं पर शांत चर्चा", a: "तर्क तैयार करना और स्पष्ट सीमा रखना।" },
+        { k: "स्पष्ट भाषा और लेखन", t: "बात को संक्षेप और स्पष्टता से कहना", a: "मुख्य बिंदु पहले, विवरण बाद में।" },
+        { k: "साप्ताहिक योजना", t: "बिना थके कामों को बाँटना", a: "प्राथमिकता और आराम के बीच संतुलन।" },
+        { k: "गलतियों की समीक्षा", t: "चूक को स्पष्ट चेकलिस्ट में बदलना", a: "कारण समझकर सटीकता बढ़ाना।" },
+        { k: "नींद और आराम", t: "जागने और सोने का नियमित समय", a: "जैविक घड़ी, प्रकाश और शरीर की मरम्मत।" },
+        { k: "जल संतुलन", t: "कितना पानी पिएँ और प्यास के कारण", a: "गर्मी और मेहनत में पानी की ज़रूरत।" },
+        { k: "संतुलित भोजन", t: "प्रोटीन, कार्ब्स, वसा और फ़ाइबर", a: "कड़े प्रतिबंधों के बिना टिकाऊ आहार।" },
+        { k: "वार्म-अप और चलना", t: "कसरत से पहले वार्म-अप और रोज़ चलना", a: "जोड़ों और मांसपेशियों को तैयार करना।" },
+        { k: "पीठ और मुद्रा", t: "स्क्रीन के सामने थकान कम करना", a: "स्क्रीन की ऊँचाई, ब्रेक और मुद्रा बदलना।" },
+        { k: "त्वचा की बुनियादी देखभाल", t: "सौम्य सफ़ाई, नमी और धूप से बचाव", a: "रोज़मर्रा की सरल देखभाल की आदतें।" },
+        { k: "तनाव और श्वास", t: "तुरंत तनाव कम करने के सरल तरीके", a: "शांति और स्पष्टता लौटाने के कदम।" },
+        { k: "स्थान और फ़ाइलों की व्यवस्था", t: "मेज़ और फ़ोल्डरों का कचरा साफ़ करना", a: "भौतिक और डिजिटल जगह को व्यवस्थित रखना।" },
+        { k: "यात्रा सुरक्षा", t: "मार्ग, बैटरी ध्यान और रास्ता पहचानना", a: "आवागमन की व्यावहारिक तैयारी।" },
+        { k: "मीडिया साक्षरता", t: "तथ्य, भावनात्मक चाल और अफ़वाह में फ़र्क", a: "मूल स्रोत, तारीख़ और संदर्भ जाँचना।" },
+        { k: "गेम मैकेनिक्स", t: "जोखिम और इनाम चक्र खिलाड़ी को कैसे जोड़ते हैं", a: "गेम डिज़ाइन और अनुभव की मूल बातें।" },
+        { k: "टीम रणनीति", t: "स्थिति, समय और संक्षिप्त सूचना", a: "टीम खेल में तालमेल और अनुशासन।" },
+        { k: "गेम संतुलन और अर्थव्यवस्था", t: "संसाधन और लागत रणनीति कैसे बदलते हैं", a: "खेल के भीतर संसाधन, प्रगति और चुनाव।" },
+        { k: "कहानी और गति", t: "कहानी या वीडियो में ध्यान बनाए रखना", a: "शुरुआत, संघर्ष, गति और समापन।" },
+        { k: "संपादन और ध्वनि", t: "मज़बूत शुरुआत, साफ़ आवाज़ और लय", a: "वीडियो और ऑडियो संपादन की आदतें।" },
+        { k: "सुझाव फ़ीड", t: "पूरा देखना और प्रतिक्रियाएँ पहुँच कैसे तय करती हैं", a: "फ़ीड में सामग्री दिखाने के नियम।" },
+        { k: "भूगोल और समय क्षेत्र", t: "महाद्वीप, सीमाएँ और समय क्षेत्र", a: "विश्व भूगोल और समय की समझ।" },
+        { k: "तकनीक का इतिहास", t: "संचार, ऊर्जा और परिवहन ने जीवन कैसे बदला", a: "तकनीकी विकास के मुख्य पड़ाव।" },
+        { k: "अंतरिक्ष और पैमाना", t: "ग्रह, तारे, आकाशगंगाएँ और प्रकाश-वर्ष", a: "ब्रह्मांड की संरचना और दूरी की इकाइयाँ।" },
+        { k: "संज्ञानात्मक पूर्वाग्रह", t: "सोच के शॉर्टकट और निष्कर्षों की जाँच", a: "घटनाओं को परखने की सामान्य चूकें।" }
+      ],
+      es: [
+        { k: "Python y lógica condicional", t: "Condiciones, bucles y funciones en la práctica", a: "Bloques base para escribir programas y seguir su lógica." },
+        { k: "Algoritmos y complejidad", t: "Por qué importa medir la rapidez de un algoritmo", a: "Cómo crece el tiempo al aumentar los datos." },
+        { k: "Bases de datos y consultas", t: "Tablas, claves y búsqueda rápida de datos", a: "Organizar y consultar información estructurada." },
+        { k: "Ciberseguridad en casa", t: "Proteger dispositivos y cuentas ante intrusos", a: "Higiene digital diaria y control de accesos." },
+        { k: "Linux y línea de comandos", t: "Para qué sirve la terminal y comandos base", a: "Moverse por rutas, archivos y ejecuciones en consola." },
+        { k: "Formatos y archivos", t: "Diferencias entre texto, hojas y comprimidos", a: "Cómo se guardan y comprimen los archivos." },
+        { k: "Pruebas y errores", t: "Detectar fallos antes de mostrar el resultado", a: "Revisar bordes, entradas y comportamiento." },
+        { k: "Versiones y lanzamientos", t: "Historial de cambios y vuelta atrás segura", a: "Avanzar sin perder un estado funcional." },
+        { k: "Automatización de tareas", t: "Quitar rutina repetitiva con pequeños scripts", a: "Aplicar reglas simples a pasos repetidos." },
+        { k: "Leer documentación", t: "Encontrar respuestas rápido en guías oficiales", a: "Interpretar funciones, parámetros y ejemplos." },
+        { k: "Álgebra y expresiones", t: "Paréntesis, términos semejantes y signos", a: "Reglas básicas donde suelen perderse puntos." },
+        { k: "Geometría de triángulos", t: "Ángulos, catetos y teorema de Pitágoras", a: "Relaciones clave entre lados y ángulos." },
+        { k: "Unidades y sistema SI", t: "Convertir unidades y revisar dimensiones", a: "Pasar a unidades coherentes antes de operar." },
+        { k: "Cinemática y velocidad", t: "Distancia, velocidad, aceleración y gráficas", a: "Relación entre espacio, tiempo y cambio de velocidad." },
+        { k: "Leyes de Newton", t: "Inercia, fuerza y acción-reacción", a: "Fundamentos de la mecánica clásica." },
+        { k: "Circuitos eléctricos", t: "Conexión en serie y en paralelo", a: "Reparto de corriente y voltaje en circuitos simples." },
+        { k: "Magnetismo y bobinas", t: "Campo magnético de corrientes y electroimanes", a: "Vínculo entre corriente eléctrica y magnetismo." },
+        { k: "Estructura atómica", t: "Protones, neutrones, electrones y elementos", a: "Composición del átomo y propiedades periódicas." },
+        { k: "Reacciones químicas", t: "Reactivos, productos y conservación de masa", a: "Transformación de sustancias y ajuste." },
+        { k: "Célula y ADN", t: "Cómo funciona la célula y la herencia", a: "Estructura celular básica y transmisión de rasgos." },
+        { k: "Ingresos y gastos", t: "Ver el balance real del mes con claridad", a: "Registro de entradas y gastos habituales." },
+        { k: "Fondo de emergencia", t: "Por qué conviene un colchón ante imprevistos", a: "Respaldo económico frente a gastos o pausas." },
+        { k: "Préstamos y coste total", t: "Calcular el coste real de un crédito e intereses", a: "Evaluar condiciones de deuda y pago final." },
+        { k: "Diversificación", t: "Por qué repartir riesgos entre varios activos", a: "Menor dependencia de una sola fuente." },
+        { k: "Valor del tiempo", t: "Estimar tus horas y elegir bien las tareas", a: "Comparar tiempo invertido frente al resultado." },
+        { k: "Habilidades y portafolio", t: "Mostrar trabajo real en vez de promesas vagas", a: "Reunir ejemplos concretos y verificables." },
+        { k: "Negociar condiciones", t: "Hablar de plazos, precio y límites con calma", a: "Preparar argumentos y marcos claros." },
+        { k: "Claridad al hablar y escribir", t: "Transmitir ideas de forma breve y precisa", a: "Idea principal primero y detalles después." },
+        { k: "Planificación semanal", t: "Repartir tareas sin quemarse en el intento", a: "Equilibrio entre prioridades y descanso." },
+        { k: "Revisión de errores", t: "Convertir fallos en una lista de control", a: "Analizar causas para ganar precisión." },
+        { k: "Sueño y descanso", t: "Mantener horas estables para despertar y dormir", a: "Ritmo circadiano, luz y recuperación." },
+        { k: "Hidratación", t: "Cuánta agua tomar y qué influye en la sed", a: "Mantener líquidos con calor o esfuerzo." },
+        { k: "Alimentación equilibrada", t: "Proteínas, carbohidratos, grasas y fibra", a: "Rutina alimentaria sostenible sin extremos." },
+        { k: "Calentamiento y movimiento", t: "Por qué calentar y caminar a diario importa", a: "Preparar articulaciones y músculos." },
+        { k: "Espalda y postura", t: "Reducir cansancio frente a las pantallas", a: "Altura de pantalla, pausas y cambio postural." },
+        { k: "Cuidado básico de la piel", t: "Limpieza suave, hidratación y protección solar", a: "Hábitos diarios simples y constantes." },
+        { k: "Estrés y respiración", t: "Bajar la tensión rápido en el momento", a: "Pasos sencillos para recuperar la calma." },
+        { k: "Orden en espacio y archivos", t: "Quitar el desorden en mesa y carpetas", a: "Organizar entorno físico y digital." },
+        { k: "Seguridad al viajar", t: "Rutas, batería y orientación en destino", a: "Preparación práctica para desplazarse." },
+        { k: "Alfabetización mediática", t: "Distinguir hechos de manipulación y rumores", a: "Revisar fuentes originales, fechas y contexto." },
+        { k: "Mecánicas de juego", t: "Cómo los ciclos de riesgo y premio enganchan", a: "Diseño de juegos y respuesta del jugador." },
+        { k: "Táctica en equipo", t: "Posiciones, tiempos y avisos breves", a: "Coordinación y disciplina grupal." },
+        { k: "Balance y economía de juegos", t: "Cómo recursos y costes guían la estrategia", a: "Economía interna, mejoras y riesgos." },
+        { k: "Narrativa y ritmo", t: "Mantener la atención en relatos y vídeos", a: "Gancho, conflicto, ritmo y cierre." },
+        { k: "Edición y sonido", t: "Buen inicio, voz clara y ritmo de cortes", a: "Hábitos básicos de vídeo y audio." },
+        { k: "Feeds de recomendación", t: "Cómo retención y reacciones mueven el alcance", a: "Lógica de prueba y orden en el feed." },
+        { k: "Geografía y husos horarios", t: "Continentes, fronteras y zonas horarias", a: "Referencias geográficas y cálculos de hora." },
+        { k: "Historia de la tecnología", t: "Cómo comunicación, energía y transporte cambiaron todo", a: "Hitos clave de la evolución técnica." },
+        { k: "Espacio y escalas", t: "Planetas, estrellas, galaxias y años luz", a: "Estructura cósmica y unidades de distancia." },
+        { k: "Sesgos cognitivos", t: "Atajos mentales y revisión de conclusiones", a: "Errores habituales al evaluar hechos." }
+      ],
+      ar: [
+        { k: "Python ومنطق الشروط", t: "الشروط والحلقات والدوال في التطبيق", a: "لبنات كتابة البرامج وفهم التسلسل المنطقي." },
+        { k: "الخوارزميات والتعقيد", t: "لماذا نقيس سرعة الخوارزمية مع زيادة البيانات", a: "كيف يتغير الزمن عند تضخم المدخلات." },
+        { k: "قواعد البيانات والاستعلام", t: "الجداول والمفاتيح والبحث السريع", a: "تنظيم البيانات المهيكلة واسترجاعها." },
+        { k: "الأمن الرقمي في المنزل", t: "حماية الأجهزة والحسابات من الاختراق", a: "ممارسات يومية لحماية البيانات والوصول." },
+        { k: "Linux وسطر الأوامر", t: "فائدة الطرفية والأوامر الأساسية", a: "التنقل بين المسارات والملفات وتشغيل الأوامر." },
+        { k: "صيغ الملفات والأرشيف", t: "الفرق بين النصوص والجداول والملفات المضغوطة", a: "كيفية حفظ البيانات وضغطها للمشاركة." },
+        { k: "الاختبار وتتبع الأخطاء", t: "اكتشاف الأعطال قبل عرض النتيجة", a: "فحص الحالات الحدية والمدخلات والسلوك." },
+        { k: "الإصدارات والتحديثات", t: "سجل التعديلات والرجوع الآمن", a: "إدارة النسخ دون فقدان الحالة المستقرة." },
+        { k: "أتمتة المهام", t: "تقليل الأعمال المتكررة بسكربتات بسيطة", a: "تطبيق قواعد ثابتة على الخطوات المتكررة." },
+        { k: "قراءة التوثيق", t: "الوصول السريع للمعلومة في المراجع الرسمية", a: "فهم الدوال والمعاملات والأمثلة." },
+        { k: "الجبر وتبسيط الحدود", t: "فك الأقواس وجمع الحدود والإشارات", a: "قواعد جبرية تضيع فيها الدرجات كثيرًا." },
+        { k: "هندسة المثلثات", t: "الزوايا والأضلاع ونظرية فيثاغورس", a: "العلاقات الأساسية بين أضلاع المثلث وزواياه." },
+        { k: "الوحدات ونظام SI", t: "تحويل الوحدات والتحقق من الأبعاد", a: "توحيد الوحدات قبل التعويض في القوانين." },
+        { k: "الحركة والسرعة", t: "المسافة والسرعة والتسارع ومنحنيات الحركة", a: "الرابط بين الإزاحة والزمن وتغير السرعة." },
+        { k: "قوانين نيوتن", t: "القصور الذاتي والقوة والفعل ورد الفعل", a: "أساسيات الميكانيكا الكلاسيكية." },
+        { k: "الدوائر الكهربائية", t: "التوصيل على التوالي والتوازي", a: "توزيع التيار والجهد في الدوائر البسيطة." },
+        { k: "المغناطيسية والملفات", t: "المجال المغناطيسي للتيار والمغناطيس الكهربائي", a: "الصلة بين التيار الكهربائي والمجال المغناطيسي." },
+        { k: "بنية الذرة", t: "البروتونات والنيوترونات والإلكترونات والعناصر", a: "تركيب الذرة وخصائص العناصر الدورية." },
+        { k: "التفاعلات الكيميائية", t: "المتفاعلات والنواتج وحفظ الكتلة", a: "تحول المواد وموازنة المعادلات." },
+        { k: "الخلية و DNA", t: "عمل الخلية وانتقال الصفات الوراثية", a: "البنية الخلوية الأساسية ونقل الخصائص." },
+        { k: "الدخل والمصروفات", t: "رؤية الفائض أو العجز الشهري بوضوح", a: "متابعة المقبوضات والمصاريف المنتظمة." },
+        { k: "صندوق الطوارئ", t: "أهمية الاحتياطي للمصاريف المفاجئة", a: "أمان مالي عند الطوارئ أو فترات الركود." },
+        { k: "القروض والتكلفة الكلية", t: "حساب الكلفة الفعلية للقرض والفوائد", a: "تقييم شروط الدين وإجمالي السداد." },
+        { k: "التنويع", t: "لماذا نوزع المخاطر على أكثر من أصل", a: "تقليل أثر تعثر مصدر واحد." },
+        { k: "قيمة الوقت", t: "تقدير ساعاتك واختيار المهام الأنسب", a: "مقارنة الجهد الزمني بالنتيجة الفعلية." },
+        { k: "المهارات وملف الأعمال", t: "عرض نماذج حقيقية بدل الكلام العام", a: "تجميع أمثلة واضحة تثبت المهارة." },
+        { k: "التفاوض على الشروط", t: "مناقشة المواعيد والسعر والحدود بهدوء", a: "تجهيز الحجج وتحديد نقاط الاتفاق." },
+        { k: "وضوح الكلام والكتابة", t: "إيصال الفكرة بإيجاز ودقة", a: "تقديم الخلاصة أولًا ثم التفاصيل." },
+        { k: "التخطيط الأسبوعي", t: "توزيع المهام دون استنزاف الطاقة", a: "موازنة الأولويات مع فترات الراحة." },
+        { k: "مراجعة الأخطاء", t: "تحويل الهفوات إلى قائمة تحقق واضحة", a: "تحليل الأسباب لتقليل التكرار." },
+        { k: "النوم والراحة", t: "تثبيت مواعيد الاستيقاظ والنوم", a: "الساعة البيولوجية والإضاءة والتعافي." },
+        { k: "توازن السوائل", t: "كمية الماء المناسبة وعوامل العطش", a: "الحفاظ على الترطيب في الحر والجهد." },
+        { k: "الغذاء المتوازن", t: "البروتين والكربوهيدرات والدهون والألياف", a: "نظام غذائي مستقر بعيدًا عن التطرف." },
+        { k: "الإحماء والحركة", t: "أهمية الإحماء قبل الجهد والمشي اليومي", a: "تهيئة المفاصل والعضلات للحركة." },
+        { k: "الظهر والوضعية", t: "تقليل الإجهاد أثناء استخدام الشاشات", a: "ارتفاع الشاشة والراحة وتغيير الجلسة." },
+        { k: "العناية الأساسية بالبشرة", t: "تنظيف لطيف وترطيب وحماية من الشمس", a: "خطوات يومية بسيطة ومنتظمة." },
+        { k: "التوتر والتنفس", t: "تخفيف الضغط سريعًا وقت حدوثه", a: "أساليب بسيطة لاستعادة الهدوء والتركيز." },
+        { k: "ترتيب المكان والملفات", t: "إزالة الفوضى من المكتب والمجلدات", a: "تنظيم البيئة المادية والرقمية." },
+        { k: "السلامة أثناء التنقل", t: "المسارات والبطارية ومعرفة الاتجاهات", a: "استعداد عملي للتحرك والانتقال." },
+        { k: "الوعي الإعلامي", t: "التمييز بين الحقائق والتهويل والشائعات", a: "التحقق من المصدر الأصلي والتاريخ والسياق." },
+        { k: "آليات الألعاب", t: "كيف تبقي حلقات المخاطرة والمكافأة اللاعب مندمجًا", a: "أساسيات تصميم الألعاب والتجربة." },
+        { k: "تكتيك الفريق", t: "التمركز والتوقيت والتواصل المختصر", a: "التنسيق والانضباط في اللعب الجماعي." },
+        { k: "التوازن واقتصاد الألعاب", t: "كيف توجه الموارد والكلفة الاستراتيجية", a: "اقتصاد اللعبة والتطوير والموازنة." },
+        { k: "السرد والإيقاع", t: "الحفاظ على الانتباه في القصص والمقاطع", a: "البداية والصراع والإيقاع والختام." },
+        { k: "المونتاج والصوت", t: "بداية جاذبة وصوت نقي وإيقاع متناسق", a: "عادات أساسية في تحرير الفيديو والصوت." },
+        { k: "خلاصات التوصيات", t: "كيف تؤثر المشاهدة والتفاعل على الانتشار", a: "منطق اختبار المحتوى وترتيبه." },
+        { k: "الجغرافيا والمناطق الزمنية", t: "القارات والحدود وفروق التوقيت", a: "أساسيات الجغرافيا وحساب الفروق الزمنية." },
+        { k: "تاريخ التقنية", t: "كيف غيّر الاتصال والطاقة والنقل الحياة", a: "محطات رئيسية في تطور التقنيات." },
+        { k: "الفضاء والمقاييس", t: "الكواكب والنجوم والمجرات والسنوات الضوئية", a: "بنية الكون ووحدات قياس المسافات." },
+        { k: "التحيزات المعرفية", t: "اختصارات التفكير ومراجعة الاستنتاجات", a: "أخطاء ذهنية شائعة عند تقييم الأحداث." }
+      ]
+    };
+
+    function getSeedTranslation(lang, idxZeroBased) {
+      const list = SEED_TRANSLATIONS[lang] || SEED_TRANSLATIONS.en;
+      return list[idxZeroBased % list.length];
+    }
+
+    function getLocalizedSectionName(num, titleText) {
+      const m = LANG_META[currentLang] || LANG_META.en;
+      return m.sectionLabel.replace("{n}", String(num)).replace("{title}", titleText);
+    }
+
+    function getLocalizedTopic(item) {
+      if (!item) return null;
+      const num = item.num;
+      const idx = (num - 1) % TOPIC_SEEDS.length;
+      const m = LANG_META[currentLang] || LANG_META.en;
+      const tier = num <= 100 ? m.tierTop100 : m.tierNext100;
+
+      let title = item.title;
+      let btn = item.btn;
+      let sourceText = TOPIC_SEEDS[idx].a;
+
+      if (currentLang !== "ru") {
+        const seedTr = getSeedTranslation(currentLang, idx);
+        sourceText = seedTr.a;
+        if (num <= 50) {
+          title = `${seedTr.t} (${m.topicPrefix} #${num})`;
+          btn = num === 1 && currentLang === "en" ? "AI & LLMs" : `${seedTr.k} · ${num}`;
+        } else {
+          title = `${seedTr.t} (#${num})`;
+          btn = `${seedTr.k} · ${num}`;
+        }
+      }
+
+      const sectionName = getLocalizedSectionName(num, title);
+      const about = m.aboutTemplate
+        .replace("{source}", sourceText)
+        .replace("{n}", String(num))
+        .replace("{tier}", tier);
+
+      const text = [
+        m.line1.replace("{n}", String(num)).replace("{title}", title),
+        m.line2.replace("{source}", sourceText).replace("{tier}", tier).replace("{n}", String(num)),
+        m.line3,
+        m.line4,
+        m.line5
+      ].join("\n");
+
+      return {
+        ...item,
+        btn,
+        title,
+        sectionName,
+        text,
+        about,
+        extraLinks: Array.isArray(item.extraLinks) ? item.extraLinks : []
+      };
+    }
+
+    function getSearchHaystack(item) {
+      const loc = getLocalizedTopic(item);
+      const ruSection = `раздел ${item.num} ${item.title}`;
+      const enSection = `section ${item.num} ${loc.title}`;
+      return [
+        String(item.num || ""),
+        item.id || "",
+        item.btn || "",
+        item.title || "",
+        item.text || "",
+        item.about || "",
+        loc.btn || "",
+        loc.title || "",
+        loc.sectionName || "",
+        loc.text || "",
+        loc.about || "",
+        ruSection,
+        enSection
+      ].join(" ").toLowerCase();
+    }
+
+    let currentLang = "en";
+    let selectedId = data[0] ? data[0].id : null;
+    let isExpanded = false;
+
+    const LINE_COLORS = [
+      "#7dd3fc",
+      "#86efac",
+      "#fde047",
+      "#f9a8d4",
+      "#c4b5fd",
+      "#fdba74",
+      "#67e8f9",
+      "#f8fafc"
+    ];
+
+    function tUI(key, vars = {}) {
+      const pack = LANG_META[currentLang] || LANG_META.en;
+      let str = pack[key] ?? LANG_META.en[key] ?? "";
+      Object.entries(vars).forEach(([k, v]) => {
+        str = str.replace(new RegExp(`\\{${k}\\}`, "g"), String(v));
+      });
+      return str;
+    }
+
+    function applyExpandState() {
+      const root = document.getElementById("appRoot");
+      const btn = document.getElementById("expandBtn");
+      root.classList.toggle("expanded", isExpanded);
+      btn.textContent = isExpanded ? tUI("expandLess") : tUI("expandMore");
+    }
+
+    function toggleExpand() {
+      isExpanded = !isExpanded;
+      applyExpandState();
+      setStatus("");
+    }
+
+    function buildSources(locItem) {
+      const aboutEl = document.getElementById("sourcesAbout");
+      const linksEl = document.getElementById("sourceLinks");
+      aboutEl.textContent = locItem.about || "";
+      linksEl.innerHTML = "";
+
+      const baseQuery = locItem.title || locItem.btn || "";
+      if (baseQuery) {
+        const ytLink = document.createElement("a");
+        ytLink.className = "source-link";
+        ytLink.target = "_blank";
+        ytLink.rel = "noopener noreferrer";
+        ytLink.href = "https://www.youtube.com/results?search_query=" + encodeURIComponent(baseQuery + " " + tUI("ytSuffix"));
+        ytLink.textContent = "▶ " + tUI("ytSearchLabel");
+        linksEl.appendChild(ytLink);
+
+        const webLink = document.createElement("a");
+        webLink.className = "source-link";
+        webLink.target = "_blank";
+        webLink.rel = "noopener noreferrer";
+        webLink.href = "https://www.google.com/search?q=" + encodeURIComponent(baseQuery + " " + tUI("webSuffix"));
+        webLink.textContent = "↗ " + tUI("webSearchLabel");
+        linksEl.appendChild(webLink);
+      }
+    }
+
+    function renderResultBox(rawText) {
+      const box = document.getElementById("result");
+      box.innerHTML = "";
+      const lines = (rawText || tUI("fallbackText")).split("\n");
+      lines.forEach((line, idx) => {
+        const span = document.createElement("span");
+        span.className = "line-item";
+        span.style.color = LINE_COLORS[idx % LINE_COLORS.length];
+        span.textContent = line;
+        box.appendChild(span);
+      });
+    }
+
+    function populateCategories(preservedValue = "ALL") {
+      const select = document.getElementById("category");
+      select.innerHTML = "";
+      const allOpt = document.createElement("option");
+      allOpt.value = "ALL";
+      allOpt.textContent = tUI("allCategories", { sections: SECTION_KEYS.length });
+      select.appendChild(allOpt);
+
+      data.forEach(item => {
+        const loc = getLocalizedTopic(item);
+        const opt = document.createElement("option");
+        opt.value = item.tag;
+        opt.textContent = loc.sectionName;
+        select.appendChild(opt);
+      });
+
+      select.value = preservedValue;
+      if (select.value !== preservedValue) {
+        select.value = "ALL";
+      }
+    }
+
+    function getFilteredData() {
+      const q = document.getElementById("search").value.trim().toLowerCase();
+      const sec = document.getElementById("category").value;
+
+      return data.filter(item => {
+        const matchesSec = sec === "ALL" || item.tag === sec;
+        if (!matchesSec) return false;
+        if (!q) return true;
+        return getSearchHaystack(item).includes(q);
+      });
+    }
+
+    function applyFilters() {
+      const filtered = getFilteredData();
+      const topicsEl = document.getElementById("topics");
+      const shownCountEl = document.getElementById("shownCount");
+      topicsEl.innerHTML = "";
+      shownCountEl.textContent = tUI("shownCount", { shown: filtered.length, total: data.length });
+
+      if (filtered.length === 0) {
+        topicsEl.innerHTML = `<div class="empty">${tUI("emptyList")}</div>`;
+        document.getElementById("resultTitle").textContent = "";
+        document.getElementById("resultTag").textContent = "";
+        document.getElementById("result").innerHTML = "";
+        document.getElementById("sourcesAbout").textContent = "";
+        document.getElementById("sourceLinks").innerHTML = "";
+        return;
+      }
+
+      if (!filtered.some(item => item.id === selectedId)) {
+        selectedId = filtered[0].id;
+      }
+
+      filtered.forEach(item => {
+        const loc = getLocalizedTopic(item);
+        const btn = document.createElement("button");
+        btn.className = "topic-btn" + (item.id === selectedId ? " active" : "");
+        btn.type = "button";
+        btn.textContent = `${item.num}. ${loc.btn}`;
+        btn.onclick = () => selectTopic(item.id);
+        topicsEl.appendChild(btn);
+      });
+
+      const activeRaw = filtered.find(item => item.id === selectedId) || filtered[0];
+      const loc = getLocalizedTopic(activeRaw);
+
+      document.getElementById("resultTitle").textContent = `${activeRaw.num}. ${loc.title}`;
+      document.getElementById("resultTag").textContent =
+        `${tUI("topicPrefix")} ${activeRaw.num}/${data.length}`;
+      renderResultBox(loc.text);
+      buildSources(loc);
+    }
+
+    function resetFilters() {
+      document.getElementById("search").value = "";
+      document.getElementById("category").value = "ALL";
+      setStatus("");
+      applyFilters();
+    }
+
+    function selectTopic(id) {
+      selectedId = id;
+      setStatus("");
+      applyFilters();
+    }
+
+    function stepTopic(delta) {
+      const filtered = getFilteredData();
+      if (filtered.length === 0) return;
+      const curIdx = Math.max(0, filtered.findIndex(item => item.id === selectedId));
+      const nextIdx = (curIdx + delta + filtered.length) % filtered.length;
+      selectTopic(filtered[nextIdx].id);
+    }
+
+    function applyLanguageTexts() {
+      const pack = LANG_META[currentLang] || LANG_META.en;
+      document.documentElement.lang = currentLang;
+      document.documentElement.dir = pack.dir || "ltr";
+      document.getElementById("brandTitle").textContent = tUI("brandTitle");
+      document.getElementById("counterSub").textContent = tUI("counterSub", {
+        count: data.length,
+        sections: SECTION_KEYS.length
+      });
+      document.getElementById("resetBtn").textContent = tUI("resetBtn");
+      document.getElementById("shortcutHint").textContent = tUI("shortcutHint");
+      document.getElementById("search").placeholder = tUI("searchPlaceholder", {
+        count: data.length,
+        sections: SECTION_KEYS.length
+      });
+      document.getElementById("sourcesTitle").textContent = tUI("sourcesTitle");
+      document.getElementById("copyBtn").textContent = tUI("copyBtn");
+      applyExpandState();
+    }
+
+    function changeLanguage() {
+      currentLang = document.getElementById("langSelect").value;
+      const currentSec = document.getElementById("category").value;
+      applyLanguageTexts();
+      populateCategories(currentSec);
+      setStatus("");
+      applyFilters();
+    }
+
+    function setStatus(msg, isWarn = false) {
+      const el = document.getElementById("status");
+      el.textContent = msg;
+      el.className = isWarn ? "status warn" : "status";
+    }
+
+    async function copyText() {
+      const rawItem = data.find(item => item.id === selectedId) || data[0];
+      const loc = getLocalizedTopic(rawItem);
+      const title = loc ? loc.title : "";
+      const body = loc ? loc.text : "";
+      const fullText = title ? `${title}\n\n${body}` : body;
+      if (!fullText) return;
+
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(fullText);
+          setStatus(tUI("copiedOk"), false);
+          return;
+        }
+      } catch (_) {}
+
+      const box = document.getElementById("result");
+      const range = document.createRange();
+      range.selectNodeContents(box);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      try {
+        document.execCommand("copy");
+        setStatus(tUI("copiedOk"), false);
+      } catch (_) {
+        setStatus(tUI("copiedWarn"), true);
+      }
+    }
+
+    document.addEventListener("keydown", e => {
+      const searchInput = document.getElementById("search");
+      if (e.key === "/" && document.activeElement !== searchInput) {
+        e.preventDefault();
+        searchInput.focus();
+      } else if (e.key === "Escape" && document.activeElement === searchInput) {
+        if (searchInput.value) {
+          searchInput.value = "";
+          applyFilters();
+        } else {
+          searchInput.blur();
+        }
+      } else if (e.altKey && e.key === "ArrowRight") {
+        e.preventDefault();
+        stepTopic(1);
+      } else if (e.altKey && e.key === "ArrowLeft") {
+        e.preventDefault();
+        stepTopic(-1);
+      }
+    });
+
+    applyLanguageTexts();
+    populateCategories("ALL");
+    applyFilters();
+  </script>
+</body>
+</html>
